@@ -1,5 +1,5 @@
 title: Topic Lost or Found? - Measuring Topic Fidelity in Reddit TL;DR Summaries
-description: Evaluating how well Reddit TL;DR summaries preserve the topics of original posts using BERTopic and LDA.
+description: Measuring how well Reddit TL;DR summaries preserve the main topic of the original post using LDA and BERTopic.
 show_downloads: True
 plugins:
   - jekyll-relative-links
