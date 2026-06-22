@@ -1,5 +1,5 @@
-title: Document Analysis Semester Project
-description: This repository is a GitHub Pages template for Document Analysis course projects. 
+title: Topic Lost or Found? - Measuring Topic Fidelity in Reddit TL;DR Summaries
+description: Evaluating how well Reddit TL;DR summaries preserve the topics of original posts using BERTopic and LDA.
 show_downloads: True
 plugins:
   - jekyll-relative-links
@@ -10,4 +10,4 @@ include:
   - README.md
   - REPORT.md
 
-theme: jekyll-theme-minimal
+theme: jekyll-theme-cayman
