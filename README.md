@@ -34,7 +34,9 @@ In order to answer these questions, we will sample Reddit post-summary pairs, tr
 
 ### Dataset
 
-Provide a short description of the dataset used in your project. Focus on highlighting the aspects that are particularly relevant to your work.
+We use the Webis-TLDR-17 dataset by Völske et al. (2017), which contains Reddit posts paired with author-written TL;DR summaries. In our project, content is used as the source document and summary as the corresponding TL;DR.
+
+The dataset is suitable for our research question because each example directly links a full Reddit post with a human-written summary. This allows us to compare the topics in the original post with the topics preserved in the summary and evaluate topic fidelity at the content-summary pair level.
 
 ### Methods
 
@@ -56,7 +58,14 @@ pip install -r requirements.txt
 
 #### Experiments
 
-Report how you conducted the experiments. We suggest including detailed explanations of the preprocessing steps and model training in your project. For the preprocessing, describe  data cleaning, normalization, or transformation steps you applied to prepare the dataset, along with the reasons for choosing these methods. In the section on model training, explain the methodologies and algorithms you used, detail the parameter settings and training protocols, and describe any measures taken to ensure the validity of the models.
+We used Google Colab for dataset access and preprocessing because the Webis-TLDR-17 loading script downloads the original corpus-webis-tldr-17.zip archive, which is about 3.1 GB. Even when requesting a smaller subset, access to the full archive may be required first. Running this step in Colab avoids storing the archive locally and provides sufficient temporary storage for downloading and processing the data.
+
+We first inspected a subset of the Webis-TLDR-17 training data to obtain subreddit-level counts. Based on this overview, we selected four subreddits with at least 1,000 valid content-summary pairs: politics, gaming, AdviceAnimals, and explainlikeimfive.
+From each subreddit, we randomly sampled 1,000 examples, resulting in a working dataset of 4,000 content-summary pairs. We kept all original columns and added content_len and summary_len, which store the character lengths of the original post and TL;DR summary.
+We created two preprocessing versions of the text. For BERTopic, we applied light cleaning to content and summary: URL/link removal, HTML-like markup removal, and whitespace normalization. The resulting columns are content_clean and summary_clean. No stopword removal, lemmatization, or manual tokenization was applied for this version, because BERT-based models use their own tokenizer and rely on natural sentence context.
+
+For LDA, we applied stronger preprocessing to the cleaned text: lowercasing, tokenization, stopword removal, removal of very short tokens, and lemmatization. The resulting columns are content_lda_preprocessed and summary_lda_preprocessed. This version is used for LDA because it reduces vocabulary sparsity and is better suited to a bag-of-words topic model.
+
 
 ### Results and Discussion
 
