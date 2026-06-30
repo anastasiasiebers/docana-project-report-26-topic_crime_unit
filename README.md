@@ -28,9 +28,9 @@ So our end goal is going to be to see whether the topics in the summary match th
 > **Main research question:**  
 > Do Reddit TL;DR summaries preserve the topics of the original posts?
 
-We want to go a bit more in depth and also figure out, as aforementioned, whether LDA and BERTopic produce different estimates of topic match. We also want to check whether relatively short summaries are associated with lower topic match.
+We want to go a bit more in depth and also figure out, as aforementioned, whether LDA and BERTopic produce different estimates of topic match. We also want to check whether short summaries are associated with lower topic match.
 
-In order to answer these questions, we will sample Reddit post-summary pairs, train topic models on the full post texts in our sampled dataset, and then get topic probability distribution vectors for both the full post and the summary. We will then compare these vector representations of the topic probability distributions by calculating cosine similarity. We will compare the results of LDA with the results of BERTopic. To answer the last question, whether relatively short summaries are associated with lower topic match, we will use the provided lengths of the post and the summary, calculate a relative length, and then look at the correlation between relative length and the cosine similarity of the full post and summary.
+In order to answer these questions, we will sample Reddit post-summary pairs, train topic models on the full post texts in our sampled dataset, and then get topic probability distribution vectors for both the full post and the summary. We will then compare these vector representations of the topic probability distributions by calculating cosine similarity. We will compare the results of LDA with the results of BERTopic. To answer the last question, whether short summaries are associated with lower topic match, we will look at the correlation between summary length and the cosine similarity of the full post and summary.
 
 ### Dataset
 
