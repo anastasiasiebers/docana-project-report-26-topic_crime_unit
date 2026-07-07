@@ -42,19 +42,18 @@ The dataset is suitable for our research question because each example directly 
 
 #### Setup 
 
+The experiments were implemented in Python using Google Colab and Jupyter notebooks.
 
-Outline the tools, software, and hardware environment, along with configurations used for conducting your experiments. Be sure to document the Python version and other dependencies clearly. Provide step-by-step instructions on how to recreate your environment, ensuring anyone can replicate your setup with ease:
+Dataset access and preprocessing were performed in Google Colab. We used Colab because the Webis-TLDR-17 loading script downloads the original `corpus-webis-tldr-17.zip` archive, which is about 3.1 GB. Even when loading a smaller subset, access to the full archive may be required first. Colab provided sufficient temporary storage and avoided storing the archive locally.
 
-```bash
-conda create --name myenv python=<version>
-conda activate myenv
-```
+The later topic modeling and analysis steps were conducted in a local Jupyter notebook environment. The analysis notebook was run with Python 3.13.9, while the preprocessing notebook was run in Google Colab with Python 3.12. No GPU was required for the experiments.
 
-Include a `requirements.txt` file in your project repository. This file should list all the Python libraries and their versions needed to run the project. Provide instructions on how to install these dependencies using pip, for example:
+To make the project reproducible, all required Python libraries and their versions are listed in `requirements.txt`. The environment can be recreated with:
 
 ```bash
+conda create --name docana-tldr python=3.13
+conda activate docana-tldr
 pip install -r requirements.txt
-```
 
 #### Experiments
 
