@@ -91,8 +91,6 @@ Finally, we compared the similarity distributions produced by LDA and BERTopic u
 
 ### Results and Discussion
 
-### Results and Discussion
-
 The cosine similarity distributions show that LDA and BERTopic produce clearly different patterns of topic match between full Reddit posts and their TL;DR summaries.
 
 <img width="1402" height="430" alt="image" src="https://github.com/user-attachments/assets/6a53728c-f0e9-4956-bd2f-6557b87e9760" />
