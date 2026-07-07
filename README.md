@@ -34,7 +34,7 @@ In order to answer these questions, we will sample Reddit post-summary pairs, tr
 
 ### Dataset
 
-We use the Webis-TLDR-17 dataset by Völske et al. (2017), which contains Reddit posts paired with author-written TL;DR summaries. In our project, content is used as the source document and summary as the corresponding TL;DR.
+We use the Webis-TLDR-17 dataset by Völske et al. (2017), which contains Reddit posts paired with author-written TL;DR summaries. In our project, `content` is used as the source document and `summary` as the corresponding TL;DR.
 
 The dataset is suitable for our research question because each example directly links a full Reddit post with a human-written summary. This allows us to compare the topics in the original post with the topics preserved in the summary and evaluate topic fidelity at the content-summary pair level.
 
@@ -58,18 +58,59 @@ pip install -r requirements.txt
 
 #### Experiments
 
-We used Google Colab for dataset access and preprocessing because the Webis-TLDR-17 loading script downloads the original corpus-webis-tldr-17.zip archive, which is about 3.1 GB. Even when requesting a smaller subset, access to the full archive may be required first. Running this step in Colab avoids storing the archive locally and provides sufficient temporary storage for downloading and processing the data.
+##### Preprocessing
 
-We first inspected a subset of the Webis-TLDR-17 training data to obtain subreddit-level counts. Based on this overview, we selected four subreddits with at least 1,000 valid content-summary pairs: politics, gaming, AdviceAnimals, and explainlikeimfive.
-From each subreddit, we randomly sampled 1,000 examples, resulting in a working dataset of 4,000 content-summary pairs. We kept all original columns and added content_len and summary_len, which store the character lengths of the original post and TL;DR summary.
-We created two preprocessing versions of the text. For BERTopic, we applied light cleaning to content and summary: URL/link removal, HTML-like markup removal, and whitespace normalization. The resulting columns are content_clean and summary_clean. No stopword removal, lemmatization, or manual tokenization was applied for this version, because BERT-based models use their own tokenizer and rely on natural sentence context.
+We first inspected a subset of the Webis-TLDR-17 training data to obtain subreddit-level counts. Based on this overview, we selected four subreddits with at least 1,000 valid content-summary pairs: `politics`, `gaming`, `todayilearned`, and `explainlikeimfive`.
 
-For LDA, we applied stronger preprocessing to the cleaned text: lowercasing, tokenization, stopword removal, removal of very short tokens, and lemmatization. The resulting columns are content_lda_preprocessed and summary_lda_preprocessed. This version is used for LDA because it reduces vocabulary sparsity and is better suited to a bag-of-words topic model.
+From each subreddit, we randomly sampled 1,000 examples using a fixed random seed, resulting in a working dataset of 4,000 content-summary pairs. We kept the original dataset columns and added additional columns for cleaned and preprocessed text.
 
+We created two preprocessing versions of the text. For BERTopic, we applied light cleaning to both `content` and `summary`: URL/link removal, HTML-like markup removal, Reddit Markdown link cleanup, and whitespace normalization. The resulting columns were `content_clean` and `summary_clean`. We did not apply stopword removal, lemmatization, or manual tokenization for this version, because BERT-based models use their own tokenizer and rely on natural sentence context.
+
+For LDA, we applied stronger preprocessing to the cleaned text. This included lowercasing, tokenization, removal of non-alphabetic characters, stopword removal, removal of very short tokens, and lemmatization. The resulting columns were `content_lda_preprocessed` and `summary_lda_preprocessed`. This version was used for LDA because it reduces vocabulary sparsity and is better suited to a bag-of-words topic model.
+
+##### Model training
+
+To choose the final configuration, we tested three model setups:
+
+| Run | LDA setting | BERTopic setting | Purpose |
+|---|---|---|---|
+| Run 1 | 100 topics | HDBSCAN min_cluster_size = 30 | Baseline |
+| Run 2 | 50 topics | HDBSCAN min_cluster_size = 15 | More granular BERTopic, medium LDA |
+| Run 3 | 25 topics | HDBSCAN min_cluster_size = 50 | Broader BERTopic |
+| Final setup | 50 topics | HDBSCAN min_cluster_size = 50 | Final configuration |
+
+For the LDA experiment, we trained a Gensim LDA model on the preprocessed full Reddit posts. The model used 50 topics, `random_state=100`, `passes=10`, `chunksize=10000`, and `alpha="auto"`. Words appearing fewer than 20 times in the corpus were removed from the dictionary. After training the model on the full posts, we inferred topic distributions for both posts and summaries in the same 50-topic space. This ensured that the topic vectors of a post and its TL;DR were directly comparable.
+
+For the BERTopic experiment, we trained BERTopic on the lightly cleaned full Reddit posts and then transformed the summaries into the same topic space. We used the sentence-transformer model `all-MiniLM-L6-v2` for embeddings. The CountVectorizer used English stopwords, `min_df=2`, and an n-gram range of `(1, 2)`. UMAP was configured with `n_neighbors=15`, `n_components=5`, `min_dist=0.0`, `metric="cosine"`, and `random_state=265`. HDBSCAN was configured with `min_cluster_size=50`, `min_samples=5`, `metric="euclidean"`, `cluster_selection_method="eom"`, and `prediction_data=True`.
+
+##### Evaluation
+
+For each post-summary pair, we computed cosine similarity between the topic vector of the full post and the topic vector of the TL;DR summary. A higher cosine similarity indicates stronger topical alignment between the full post and its summary.
+
+Finally, we compared the similarity distributions produced by LDA and BERTopic using histograms and boxplots. We also calculated Spearman correlation between summary length and cosine similarity to investigate whether shorter summaries were associated with weaker topic match.
 
 ### Results and Discussion
 
-Present the findings from your experiments, supported by visual or statistical evidence. Discuss how these results address your main research question.
+### Results and Discussion
+
+The cosine similarity distributions show that LDA and BERTopic produce clearly different patterns of topic match between full Reddit posts and their TL;DR summaries.
+
+<img width="1402" height="430" alt="image" src="https://github.com/user-attachments/assets/6a53728c-f0e9-4956-bd2f-6557b87e9760" />
+
+For LDA, the histogram is strongly skewed toward very low cosine similarity. A large number of post-summary pairs receive scores close to zero. This suggests that, according to the LDA topic representation, many TL;DRs do not closely match the topic distribution of their original posts. One possible explanation is that LDA relies on bag-of-words representations and therefore struggles with very short summaries. If a summary contains only a few words, there may not be enough lexical evidence for LDA to recover the same topic distribution as in the full post.
+
+BERTopic shows a different pattern. Its similarity distribution is more polarized: many summaries receive very high similarity scores, while another group receives very low scores, with fewer cases in the middle. This suggests that BERTopic often classifies summaries as either clearly aligned or clearly not aligned with the original post. Since BERTopic uses sentence embeddings, it can capture semantic similarity even when the summary uses different words from the original post. At the same time, very vague or extremely short summaries may still fail to preserve enough topical information and therefore receive low similarity scores.
+
+This difference between LDA and BERTopic is an important finding. It shows that topic fidelity is not measured in exactly the same way by different topic modeling methods. LDA and BERTopic do not simply produce interchangeable results; the method chosen affects the interpretation of whether a TL;DR preserves the topics of the full post.
+
+We also examined the relationship between summary length and topic similarity. The Spearman correlation between summary length and cosine similarity was weak but positive for both models. In the final setup, the correlation was approximately 0.26 for LDA and 0.16 for BERTopic. This means that longer summaries tend to have slightly higher topic similarity, but the relationship is not strong. In other words, longer summaries are not automatically faithful, and shorter summaries are not automatically unfaithful. However, longer summaries usually provide more space to mention multiple topics, making it easier for topic modeling methods to recover the topical overlap.
+
+| Model | Spearman correlation |
+|---|---:|
+| BERTopic | approx. 0.2253 |
+| LDA | approx. 0.1596 |
+
+Overall, the results answer our main research question with a nuanced conclusion: Reddit TL;DRs do preserve topics in some cases, but topic preservation is inconsistent. Some summaries clearly overlap with their original posts, while others lose important topical information. The comparison between LDA and BERTopic further shows that this conclusion depends partly on the modeling approach used to represent topics.
 
 ### Conclusion
 
