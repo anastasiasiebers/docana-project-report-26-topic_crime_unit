@@ -70,6 +70,8 @@ For LDA, we applied stronger preprocessing to the cleaned text. This included lo
 
 One challenge with the LDA preprocessing was that some TL;DR summaries were extremely short. After removing stopwords, punctuation, and very short tokens, 25 summaries became empty. We did not drop these cases, because the fact that no meaningful tokens remained is itself relevant for topic fidelity. Instead, we kept them in the dataset and assigned them a cosine similarity of 0 for the LDA-based comparison, since an empty topic representation cannot be considered topically similar to the original post.
 
+The final preprocessed dataset was saved as `selected_4_subreddits_1000_each_clean_lda.csv` and included in the `code` folder of the repository.
+
 ##### Model Training
 
 We used two topic modeling methods: LDA and BERTopic. LDA is a classical probabilistic topic model that works with word co-occurrence and bag-of-words representations. BERTopic is a more modern embedding-based method. It first represents texts through semantic embeddings and then clusters similar texts into topics. By comparing both methods, we could test whether topic fidelity depends on the type of topic representation.
