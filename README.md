@@ -44,7 +44,7 @@ The dataset is suitable for our research question because each example directly 
 
 The experiments were implemented in Python using Google Colab and Jupyter notebooks.
 
-Dataset access and preprocessing were performed in Google Colab. We used Colab because the Webis-TLDR-17 loading script downloads the original `corpus-webis-tldr-17.zip` archive, which is about 3.1 GB. Even when loading a smaller subset, access to the full archive may be required first. Colab provided sufficient temporary storage and avoided storing the archive locally.
+Dataset access and preprocessing were performed in Google Colab. We used Colab because the Webis-TLDR-17 loading script downloads the original `corpus-webis-tldr-17.zip` archive, which is about 3.1 GB. Even when loading a smaller subset, access to the full archive is required first. Colab provided sufficient temporary storage and avoided storing the archive locally.
 
 The later topic modeling and analysis steps were conducted in a local Jupyter notebook environment. The analysis notebook was run with Python 3.13.9, while the preprocessing notebook was run in Google Colab with Python 3.12. No GPU was required for the experiments.
 
@@ -91,35 +91,37 @@ Finally, we compared the similarity distributions produced by LDA and BERTopic u
 
 ### Results and Discussion
 
-The cosine similarity distributions show that LDA and BERTopic produce clearly different patterns of topic match between full Reddit posts and their TL;DR summaries.
+The cosine similarity histograms show that LDA and BERTopic behave quite differently when comparing full Reddit posts with their TL;DR summaries.
 
 <img width="1402" height="430" alt="image" src="https://github.com/user-attachments/assets/6a53728c-f0e9-4956-bd2f-6557b87e9760" />
 
-For LDA, the histogram is strongly skewed toward very low cosine similarity. A large number of post-summary pairs receive scores close to zero. This suggests that, according to the LDA topic representation, many TL;DRs do not closely match the topic distribution of their original posts. One possible explanation is that LDA relies on bag-of-words representations and therefore struggles with very short summaries. If a summary contains only a few words, there may not be enough lexical evidence for LDA to recover the same topic distribution as in the full post.
+For LDA, many scores are close to zero. This means that, according to the LDA topic representation, many summaries are not very close to the topic distribution of their original posts. One reason for this may be that LDA works with word-based, bag-of-words representations. Very short summaries often contain too few words for LDA to recover the same topics as in the full post.
 
-BERTopic shows a different pattern. Its similarity distribution is more polarized: many summaries receive very high similarity scores, while another group receives very low scores, with fewer cases in the middle. This suggests that BERTopic often classifies summaries as either clearly aligned or clearly not aligned with the original post. Since BERTopic uses sentence embeddings, it can capture semantic similarity even when the summary uses different words from the original post. At the same time, very vague or extremely short summaries may still fail to preserve enough topical information and therefore receive low similarity scores.
+BERTopic shows a more polarized pattern. Many summaries receive very high similarity scores, while another group receives very low scores, with fewer cases in the middle. This makes sense because BERTopic uses embeddings and can capture semantic similarity even when the exact words differ. However, if a TL;DR is very vague or too short, it may still not contain enough topical information.
 
-This difference between LDA and BERTopic is an important finding. It shows that topic fidelity is not measured in exactly the same way by different topic modeling methods. LDA and BERTopic do not simply produce interchangeable results; the method chosen affects the interpretation of whether a TL;DR preserves the topics of the full post.
-
-We also examined the relationship between summary length and topic similarity. The Spearman correlation between summary length and cosine similarity was weak but positive for both models. In the final setup, the correlation was approximately 0.26 for LDA and 0.16 for BERTopic. This means that longer summaries tend to have slightly higher topic similarity, but the relationship is not strong. In other words, longer summaries are not automatically faithful, and shorter summaries are not automatically unfaithful. However, longer summaries usually provide more space to mention multiple topics, making it easier for topic modeling methods to recover the topical overlap.
+We also looked at whether longer summaries are more topically similar to their original posts. For this, we used Spearman correlation, because it is less sensitive to outliers and does not assume a perfectly linear relationship.
 
 | Model | Spearman correlation |
 |---|---:|
 | BERTopic | approx. 0.2253 |
 | LDA | approx. 0.1596 |
 
-Overall, the results answer our main research question with a nuanced conclusion: Reddit TL;DRs do preserve topics in some cases, but topic preservation is inconsistent. Some summaries clearly overlap with their original posts, while others lose important topical information. The comparison between LDA and BERTopic further shows that this conclusion depends partly on the modeling approach used to represent topics.
+Both correlations are weak but positive. This means that longer summaries tend to have slightly higher topic similarity, but the effect is small. A longer TL;DR is not automatically more faithful, and a short TL;DR is not automatically worse. Still, longer summaries usually give authors more space to mention several topics, which makes topical overlap easier for the models to recover.
 
 ### Conclusion
 
-Summarize the major outcomes of your project, reflect on the research findings, and clearly state the conclusions you've drawn from the study.
+First, TL;DR fidelity is real, but inconsistent—and it depends heavily on how you measure it. Since LDA and BERTopic showed different patterns, we can't simply conclude that users always stay faithful to the original topic when summarizing, nor that they never do. When we looked at examples both models classified as highly similar, we did see a clear topical overlap. 
+
+Second, absolute shortness hurts fidelity. Longer TL;DRs tend to better recover the topics of the full post. This makes intuitive sense, but it also suggests that even though a topic can in principle be captured in just a few words, people writing summaries often need more words to actually convey it.
+
+Lastly, some open problems remain. We measured topic *overlap*, not semantic *faithfulness*—two texts can land in the same topic cluster while saying very different things within it. A natural next step would be to measure semantic similarity using sentence embeddings, rather than topic-distribution similarity. We focused on topic distributions here because we were specifically interested in whether the choice of NLP method—a more traditional probabilistic approach versus a more modern embedding-based one—leads to different conclusions. And the answer is yes—even measuring the exact same phenomenon, the method you choose shapes the story you tell - at least in our case.
 
 ### Contributions
 
-| Team Member  | Contributions                                             |
-|--------------|-----------------------------------------------------------|
-| Ekaterina Kabashko  | |                                                       |
-| Anastasia Siebers  | ...                                                       |
+| Team Member | Contributions |
+|---|---|
+| Ekaterina Kabashko | Data collection, preprocessing pipeline, parameter tuning, results interpretation |
+| Anastasia Siebers | Analysis pipeline, model implementation, similarity evaluation, results interpretation |
 
 ### References
 
