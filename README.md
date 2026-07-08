@@ -105,9 +105,14 @@ The cosine similarity histograms show that LDA and BERTopic behave quite differe
 
 <img width="1402" height="430" alt="image" src="https://github.com/user-attachments/assets/6a53728c-f0e9-4956-bd2f-6557b87e9760" />
 
+
 For LDA, many scores are close to zero. This means that, according to the LDA topic representation, many summaries are not very close to the topic distribution of their original posts. One reason for this may be that LDA works with word-based, bag-of-words representations. Very short summaries often contain too few words for LDA to recover the same topics as in the full post.
 
 BERTopic shows a more polarized pattern. Many summaries receive very high similarity scores, while another group receives very low scores, with fewer cases in the middle. This makes sense because BERTopic uses embeddings and can capture semantic similarity even when the exact words differ. However, if a TL;DR is very vague or too short, it may still not contain enough topical information.
+
+<img width="1280" height="383" alt="telegram-cloud-photo-size-2-5364340730698078702-y" src="https://github.com/user-attachments/assets/e984abab-812a-4257-b769-56936c7e5158" />
+
+The boxplots show the same tendency as the histograms. LDA has a very low median similarity score, meaning that many summaries are only weakly aligned with their full posts. BERTopic has a much higher median and a wider range of scores. This supports our main finding that the two models produce different views of topic fidelity.
 
 We also looked at whether longer summaries are more topically similar to their original posts. For this, we used Spearman correlation, because it is less sensitive to outliers and does not assume a perfectly linear relationship.
 
@@ -139,8 +144,8 @@ Lastly, some open problems remain. We measured topic *overlap*, not semantic *fa
 
 | Team Member | Contributions |
 |---|---|
-| Ekaterina Kabashko | Data collection, preprocessing pipeline, parameter tuning |
-| Anastasia Siebers | Analysis pipeline, model implementation, similarity evaluation |
+| Ekaterina Kabashko | Data collection and preprocessing pipeline, parameter tuning |
+| Anastasia Siebers | Analysis pipeline, model implementation and evaluation |
 | Together | Results interpretation, final report and presentation |
 
 ### References
