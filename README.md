@@ -103,8 +103,9 @@ Finally, we compared the similarity distributions produced by LDA and BERTopic u
 
 The cosine similarity histograms show that LDA and BERTopic behave quite differently when comparing full Reddit posts with their TL;DR summaries.
 
-<img width="1402" height="430" alt="image" src="https://github.com/user-attachments/assets/6a53728c-f0e9-4956-bd2f-6557b87e9760" />
-<br>
+<p style="margin: 24px 0 32px 0;">
+  <img width="1402" height="430" alt="Histogram of LDA and BERTopic cosine similarity" src="https://github.com/user-attachments/assets/6a53728c-f0e9-4956-bd2f-6557b87e9760" />
+</p>
 
 For LDA, many scores are close to zero. This means that, according to the LDA topic representation, many summaries are not very close to the topic distribution of their original posts. One reason for this may be that LDA works with word-based, bag-of-words representations. Very short summaries often contain too few words for LDA to recover the same topics as in the full post.
 
