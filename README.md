@@ -122,10 +122,10 @@ To make the similarity scores easier to interpret, we also inspected individual 
 
 | Case | Model | Similarity | Example summary | Interpretation |
 |---|---|---:|---|---|
-| High similarity | LDA | 0.9673 | “The producer is the movie's boss... The director is more of an artist...” | The summary preserves the main distinction discussed in the post: producer vs. director. |
+| High similarity | LDA | 0.9673 | “The producer is the movie's boss... The director is more of an artist...” | The summary preserves the central distinction discussed in the post. |
 | High similarity | BERTopic | 1.0000 | “Punk Buster ruined BF2 for me...” | The summary clearly captures the post’s main topic: frustration with PunkBuster and BF2. |
-| Low similarity | LDA | 0.0053 | “yeah, you're not full of shit.” | The summary is very general and does not preserve the detailed topic of the post. |
-| Low similarity | BERTopic | 0.0000 | “though? Fantasy is powerful :)” | The summary is too short and vague for the model to recover the post’s topic. |
+| Low similarity | LDA | 0.0057 | “The ABC conjecture has no effect on your daily life.” | The summary keeps only a narrow conclusion from a more detailed mathematical explanation. |
+| Low similarity | BERTopic | 0.0000 | “though? Fantasy is powerful :)” | The summary is too short and vague to preserve the post’s topic. |
 
 ### Conclusion
 
