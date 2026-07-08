@@ -68,20 +68,30 @@ We created two preprocessing versions of the text. For BERTopic, we applied ligh
 
 For LDA, we applied stronger preprocessing to the cleaned text. This included lowercasing, tokenization, removal of non-alphabetic characters, stopword removal, removal of very short tokens, and lemmatization. The resulting columns were `content_lda_preprocessed` and `summary_lda_preprocessed`. This version was used for LDA because it reduces vocabulary sparsity and is better suited to a bag-of-words topic model.
 
-##### Model training
+One challenge with the LDA preprocessing was that some TL;DR summaries were extremely short. After removing stopwords, punctuation, and very short tokens, 25 summaries became empty. We did not drop these cases, because the fact that no meaningful tokens remained is itself relevant for topic fidelity. Instead, we kept them in the dataset and assigned them a cosine similarity of 0 for the LDA-based comparison, since an empty topic representation cannot be considered topically similar to the original post.
 
-To choose the final configuration, we tested three model setups:
+##### Model Training
+
+We used two topic modeling methods: LDA and BERTopic. LDA is a classical probabilistic topic model that works with word co-occurrence and bag-of-words representations. BERTopic is a more modern embedding-based method. It first represents texts through semantic embeddings and then clusters similar texts into topics. By comparing both methods, we could test whether topic fidelity depends on the type of topic representation.
+
+One challenge was finding parameter settings that made the comparison between LDA and BERTopic fair. If one model is poorly configured, low similarity scores may reflect the setup rather than a real difference between the methods. We therefore tested several configurations before choosing the final setup.
 
 | Run | LDA setting | BERTopic setting | Purpose |
 |---|---|---|---|
-| Run 1 | 100 topics | HDBSCAN min_cluster_size = 30 | Baseline |
-| Run 2 | 50 topics | HDBSCAN min_cluster_size = 15 | More granular BERTopic, medium LDA |
-| Run 3 | 25 topics | HDBSCAN min_cluster_size = 50 | Broader BERTopic |
-| Final setup | 50 topics | HDBSCAN min_cluster_size = 50 | Final configuration |
+| Run 1 | 100 topics | HDBSCAN `min_cluster_size=30` | Baseline |
+| Run 2 | 50 topics | HDBSCAN `min_cluster_size=15` | Medium LDA, more granular BERTopic |
+| Run 3 | 25 topics | HDBSCAN `min_cluster_size=50` | Broader topic setup |
+| Final setup | 50 topics | HDBSCAN `min_cluster_size=50` | Final configuration |
 
-For the LDA experiment, we trained a Gensim LDA model on the preprocessed full Reddit posts. The model used 50 topics, `random_state=100`, `passes=10`, `chunksize=10000`, and `alpha="auto"`. Words appearing fewer than 20 times in the corpus were removed from the dictionary. After training the model on the full posts, we inferred topic distributions for both posts and summaries in the same 50-topic space. This ensured that the topic vectors of a post and its TL;DR were directly comparable.
+For LDA, we varied the number of topics. This parameter controls how detailed the topic space is. If there are too many topics, related content may be split into very narrow topics. This can make it harder for short summaries to match the full post. If there are too few topics, different themes may be merged into topics that are too broad. We selected 50 topics for the final LDA setup because it provided a reasonable middle ground.
 
-For the BERTopic experiment, we trained BERTopic on the lightly cleaned full Reddit posts and then transformed the summaries into the same topic space. We used the sentence-transformer model `all-MiniLM-L6-v2` for embeddings. The CountVectorizer used English stopwords, `min_df=2`, and an n-gram range of `(1, 2)`. UMAP was configured with `n_neighbors=15`, `n_components=5`, `min_dist=0.0`, `metric="cosine"`, and `random_state=265`. HDBSCAN was configured with `min_cluster_size=50`, `min_samples=5`, `metric="euclidean"`, `cluster_selection_method="eom"`, and `prediction_data=True`.
+For BERTopic, we varied the HDBSCAN `min_cluster_size` parameter. This parameter controls how large a group of documents must be before it can become a topic. Smaller values create more and smaller clusters, while larger values create fewer and broader topics. We selected `min_cluster_size=50` because broader topics were more suitable for comparing long posts with short TL;DR summaries.
+
+For the final LDA experiment, we trained a Gensim LDA model on the preprocessed full Reddit posts. The model used 50 topics, `random_state=100`, `passes=10`, `chunksize=10000`, and `alpha="auto"`. Words appearing fewer than 20 times in the corpus were removed from the dictionary to reduce noise from rare terms. After training the model on the full posts, we inferred topic distributions for both posts and summaries in the same 50-topic space.
+
+For the final BERTopic experiment, we trained BERTopic on the lightly cleaned full Reddit posts. The summaries were then transformed into the same topic space. We used the sentence-transformer model `all-MiniLM-L6-v2` for embeddings. The CountVectorizer used English stopwords, `min_df=2`, and an n-gram range of `(1, 2)`, so the model could represent both single words and short phrases. UMAP was configured with `n_neighbors=15`, `n_components=5`, `min_dist=0.0`, `metric="cosine"`, and `random_state=265`. HDBSCAN was configured with `min_cluster_size=50`, `min_samples=5`, `metric="euclidean"`, `cluster_selection_method="eom"`, and `prediction_data=True`.
+
+To make the comparison fair, we trained both models only on the full Reddit posts. The TL;DR summaries were then mapped into the same topic space. This way, each post and its summary could be compared using the same set of topics.
 
 ##### Evaluation
 
@@ -108,6 +118,15 @@ We also looked at whether longer summaries are more topically similar to their o
 
 Both correlations are weak but positive. This means that longer summaries tend to have slightly higher topic similarity, but the effect is small. A longer TL;DR is not automatically more faithful, and a short TL;DR is not automatically worse. Still, longer summaries usually give authors more space to mention several topics, which makes topical overlap easier for the models to recover.
 
+To make the similarity scores easier to interpret, we also inspected individual post-summary pairs. These examples show that high scores usually correspond to clear topical overlap, while low scores often occur when the TL;DR is very vague or only loosely connected to the full post.
+
+| Case | Model | Similarity | Example summary | Interpretation |
+|---|---|---:|---|---|
+| High similarity | LDA | 0.9673 | “The producer is the movie's boss... The director is more of an artist...” | The summary preserves the main distinction discussed in the post: producer vs. director. |
+| High similarity | BERTopic | 1.0000 | “Punk Buster ruined BF2 for me...” | The summary clearly captures the post’s main topic: frustration with PunkBuster and BF2. |
+| Low similarity | LDA | 0.0053 | “yeah, you're not full of shit.” | The summary is very general and does not preserve the detailed topic of the post. |
+| Low similarity | BERTopic | 0.0000 | “though? Fantasy is powerful :)” | The summary is too short and vague for the model to recover the post’s topic. |
+
 ### Conclusion
 
 First, TL;DR fidelity is real, but inconsistent—and it depends heavily on how you measure it. Since LDA and BERTopic showed different patterns, we can't simply conclude that users always stay faithful to the original topic when summarizing, nor that they never do. When we looked at examples both models classified as highly similar, we did see a clear topical overlap. 
@@ -120,8 +139,9 @@ Lastly, some open problems remain. We measured topic *overlap*, not semantic *fa
 
 | Team Member | Contributions |
 |---|---|
-| Ekaterina Kabashko | Data collection, preprocessing pipeline, parameter tuning, results interpretation |
-| Anastasia Siebers | Analysis pipeline, model implementation, similarity evaluation, results interpretation |
+| Ekaterina Kabashko | Data collection, preprocessing pipeline, parameter tuning |
+| Anastasia Siebers | Analysis pipeline, model implementation, similarity evaluation |
+| Together | Results interpretation, final report and presentation |
 
 ### References
 
