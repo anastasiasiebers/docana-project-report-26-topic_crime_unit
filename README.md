@@ -121,6 +121,12 @@ BERTopic shows a more polarized pattern. Many summaries receive very high simila
 
 The boxplots show the same tendency as the histograms. LDA has a very low median similarity score, meaning that many summaries are only weakly aligned with their full posts. BERTopic has a much higher median and a wider range of scores. This supports our main finding that the two models produce different views of topic fidelity.
 
+These different views of topic fidelity may be due to several reasons. One possible explanation is that BERTopic assigned a high number of summaries (42.68%) as well as a non-negligible amount of full posts (23.83%) to the outlier class. Even though we are not comparing topic labels directly, but probability vectors, this might still help explain why many short summaries and posts received uncertain or weak topic assignments, which then contributed to the more polarized BERTopic distribution.
+
+Another reason might be that BERTopic is cluster-based, while LDA uses a bag-of-words approach. The HDBSCAN algorithm used in BERTopic tends to either assign a text clearly to a topic cluster or mark it as an outlier. As a result, BERTopic can produce more clear-cut high or low similarity scores. LDA, on the other hand, infers topic distributions from word co-occurrence patterns, which may lead to softer and less distinct topic representations, especially for very short summaries.
+
+Lastly, LDA and BERTopic are simply two inherently different strategies for representing topics. LDA models topics as word-distribution patterns, while BERTopic creates topics from sentence embeddings and clustering. Therefore, the difference between the two models is not only a question of which model performs better, but also shows that the way we define and measure “topic fidelity” can shape the conclusions we draw.
+
 We also looked at whether longer summaries are more topically similar to their original posts. For this, we used Spearman correlation, because it is less sensitive to outliers and does not assume a perfectly linear relationship.
 
 | Model | Spearman correlation |
