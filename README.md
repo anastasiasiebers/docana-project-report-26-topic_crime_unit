@@ -104,7 +104,9 @@ Finally, we compared the similarity distributions produced by LDA and BERTopic u
 The cosine similarity histograms show that LDA and BERTopic behave quite differently when comparing full Reddit posts with their TL;DR summaries.
 
 <p style="margin: 24px 0 8px 0;">
-  <img width="1402" height="430" alt="Histogram of LDA and BERTopic cosine similarity" src="figures/cosine_similarity_histogram_comparison.png" />
+  <img src="figures/cosine_similarity_histogram_comparison.png" 
+       alt="Histogram of LDA and BERTopic cosine similarity"
+       style="max-width: 100%; height: auto;" />
 </p>
 
 <p><em>Figure 1: Distribution of cosine similarity scores for LDA and BERTopic.</em></p>
@@ -114,7 +116,9 @@ For LDA, many scores are close to zero. This means that, according to the LDA to
 BERTopic shows a more polarized pattern. Many summaries receive very high similarity scores, while another group receives very low scores, with fewer cases in the middle. This makes sense because BERTopic uses embeddings and can capture semantic similarity even when the exact words differ. However, if a TL;DR is very vague or too short, it may still not contain enough topical information.
 
 <p style="margin: 24px 0 8px 0;">
-  <img width="1280" height="383" alt="Boxplots of LDA and BERTopic cosine similarity" src="figures/cosine_similarity_boxplot_comparison.png" />
+  <img src="figures/cosine_similarity_boxplot_comparison.png" 
+       alt="Boxplots of LDA and BERTopic cosine similarity"
+       style="max-width: 100%; height: auto;" />
 </p>
 
 <p><em>Figure 2: Boxplot comparison - BERTopic vs. LDA.</em></p>
