@@ -34,9 +34,11 @@ In order to answer these questions, we will sample Reddit post-summary pairs, tr
 
 ### Dataset
 
-We use the Webis-TLDR-17 dataset by Völske et al. (2017), which contains Reddit posts paired with author-written TL;DR summaries. In our project, `content` is used as the source document and `summary` as the corresponding TL;DR.
+The dataset is well suited to our research question because each observation directly links an original Reddit post to its corresponding summary. This enables us to compare the topics present in the source document with those retained in the summary and evaluate topic fidelity at the individual content-summary pair level.
 
-The dataset is suitable for our research question because each example directly links a full Reddit post with a human-written summary. This allows us to compare the topics in the original post with the topics preserved in the summary and evaluate topic fidelity at the content-summary pair level.
+Since the full dataset is very large and would substantially increase computational runtime, we constructed a representative subsample. First, we inspected the training portion of the Webis-TLDR-17 dataset to obtain the number of valid content-summary pairs per subreddit. Based on this overview, we selected four subreddits with at least 1,000 valid observations: `politics`, `gaming`, `todayilearned`, and `explainlikeimfive`. These subreddits were chosen to represent different thematic domains, allowing us to evaluate whether the topic modeling methods perform consistently across diverse types of content.
+
+From each selected subreddit, we randomly sampled 1,000 content-summary pairs using a fixed random seed, resulting in a final working dataset of 4,000 observations. The original dataset columns were retained, and additional columns containing cleaned and preprocessed versions of the texts were added for subsequent analysis.
 
 ### Methods
 
@@ -59,10 +61,6 @@ pip install -r requirements.txt
 #### Experiments
 
 ##### Preprocessing
-
-We first inspected a subset of the Webis-TLDR-17 training data to obtain subreddit-level counts. Based on this overview, we selected four subreddits with at least 1,000 valid content-summary pairs: `politics`, `gaming`, `todayilearned`, and `explainlikeimfive`.
-
-From each subreddit, we randomly sampled 1,000 examples using a fixed random seed, resulting in a working dataset of 4,000 content-summary pairs. We kept the original dataset columns and added additional columns for cleaned and preprocessed text.
 
 We created two preprocessing versions of the text. For BERTopic, we applied light cleaning to both `content` and `summary`: URL/link removal, HTML-like markup removal, Reddit Markdown link cleanup, and whitespace normalization. The resulting columns were `content_clean` and `summary_clean`. We did not apply stopword removal, lemmatization, or manual tokenization for this version, because BERT-based models use their own tokenizer and rely on natural sentence context.
 
@@ -141,7 +139,7 @@ To make the similarity scores easier to interpret, we also inspected individual 
 
 First, TL;DR fidelity is real, but inconsistent—and it depends heavily on how you measure it. Since LDA and BERTopic showed different patterns, we can't simply conclude that users always stay faithful to the original topic when summarizing, nor that they never do. When we looked at examples both models classified as highly similar, we did see a clear topical overlap. 
 
-Second, absolute shortness hurts fidelity. Longer TL;DRs tend to better recover the topics of the full post. This makes intuitive sense, but it also suggests that even though a topic can in principle be captured in just a few words, people writing summaries often need more words to actually convey it.
+Second, summary length is weakly positively associated with topic similarity. Longer TL;DRs tend to better recover the topics of the full post. This makes intuitive sense, but it also suggests that even though a topic can in principle be captured in just a few words, people writing summaries often need more words to actually convey it.
 
 Lastly, some open problems remain. We measured topic *overlap*, not semantic *faithfulness*—two texts can land in the same topic cluster while saying very different things within it. A natural next step would be to measure semantic similarity using sentence embeddings, rather than topic-distribution similarity. We focused on topic distributions here because we were specifically interested in whether the choice of NLP method—a more traditional probabilistic approach versus a more modern embedding-based one—leads to different conclusions. And the answer is yes—even measuring the exact same phenomenon, the method you choose shapes the story you tell - at least in our case.
 
