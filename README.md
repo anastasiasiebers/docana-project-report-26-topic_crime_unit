@@ -151,7 +151,7 @@ To make the similarity scores easier to interpret, we also inspected individual 
 
 ### Conclusion
 
-First, TL;DR fidelity is real, but inconsistent—and it depends heavily on how you measure it. Since LDA and BERTopic showed different patterns, we can't simply conclude that users always stay faithful to the original topic when summarizing, nor that they never do. When we looked at examples both models classified as highly similar, we did see a clear topical overlap. 
+To conclude, TL;DR fidelity is real, but inconsistent—and it depends heavily on how you measure it. Since LDA and BERTopic showed different patterns, we can't simply conclude that users always stay faithful to the original topic when summarizing, nor that they never do. When we looked at examples both models classified as highly similar, we did see a clear topical overlap. 
 
 Second, summary length is weakly positively associated with topic similarity. Longer TL;DRs tend to better recover the topics of the full post. This makes intuitive sense, but it also suggests that even though a topic can in principle be captured in just a few words, people writing summaries often need more words to actually convey it.
 
